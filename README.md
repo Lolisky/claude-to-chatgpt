@@ -63,6 +63,41 @@ The API will then be available at http://localhost:8000. API endpoint: `/v1/chat
 
 When you input the model parameter as `gpt-3.5-turbo` or `gpt-3.5-turbo-0613`, it will be substituted with `claude-instant-1`. otherwise, `claude-2` will be utilized.
 
+#### Dynamic URL and API Key Support (Fork Version)
+
+This fork supports passing the target API URL and API key dynamically via request headers:
+
+- **`X-Target-Url`**: The target API endpoint (default: `https://api.anthropic.com/v1/messages`)
+- **`X-API-Key`**: The API key for the target service (alternatively use `Authorization: Bearer <key>`)
+
+**Example:**
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "X-Target-Url: https://your-custom-api.com/v1/chat" \
+  -H "X-API-Key: your-api-key-here" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+Or using `Authorization` header:
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "X-Target-Url: https://your-custom-api.com/v1/chat" \
+  -H "Authorization: Bearer your-api-key-here" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+This allows you to use the same Cloudflare Worker to proxy requests to different Claude-compatible APIs or any OpenAI-compatible service.
+
 
 #### GUI
 

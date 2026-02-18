@@ -5,15 +5,25 @@ addEventListener('fetch', (event) => {
 });
 
 const CLAUDE_API_KEY = ''; // Optional: default claude api key if you don't want to pass it in the request header
-const CLAUDE_BASE_URL = 'https://api.anthropic.com/v1/messages'; // Changed to messages endpoint
+const CLAUDE_BASE_URL = 'https://api.anthropic.com/v1/messages'; // Default fallback URL
 const MAX_TOKENS = 4096;
 
 function getAPIKey(headers) {
+  // Priority: X-API-Key > Authorization header > default key
+  const xApiKey = headers['x-api-key'];
+  if (xApiKey) {
+    return xApiKey;
+  }
   const authorization = headers.authorization;
   if (authorization) {
     return authorization.split(' ')[1] || CLAUDE_API_KEY;
   }
   return CLAUDE_API_KEY;
+}
+
+function getTargetUrl(headers) {
+  // Get target URL from X-Target-Url header, fallback to default
+  return headers['x-target-url'] || CLAUDE_BASE_URL;
 }
 
 function formatStreamResponseJson(claudeResponse) {
@@ -197,7 +207,8 @@ async function handleRequest(request) {
       stream,
     };
 
-    const claudeResponse = await fetch(CLAUDE_BASE_URL, {
+    const targetUrl = getTargetUrl(headers);
+    const claudeResponse = await fetch(targetUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
